@@ -1,0 +1,19 @@
+{
+  "name": "roboto-default",
+  "version": "1.0.0",
+  "description": "4 Robots that make youtube videos",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/LucasPaszinski/Roboto-VideoMaker.git"
+  },
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/LucasPaszinski/Roboto-VideoMaker/issues"
+  },
+  "homepage": "https://github.com/LucasPaszinski/Roboto-VideoMaker#readme"
+}
