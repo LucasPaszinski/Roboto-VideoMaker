@@ -1,22 +1,24 @@
-const readline = require("readline-sync");
+
+const robots = {
+  userInput:require('./robots/userInput'),
+  text : require('./robots/text'),
+}
 
 function start() {
   const content = {};
-  content.searchTerm = askAndReturnSearch();
-  content.searchPrefix = askAndReturnPrefix();
+  // content.sourceContentOriginal = "";
+  // content.sourceContentClean = "";
+  // content.sentences = [
+  //   {
+  //     text: "",
+  //     keywords: [""],
+  //     images: [""]
+  //   }
+  // ];
+  //Robots Initialization
+  robots.userInput(content);
+  robots.text(content);
 
-  function askAndReturnSearch() {
-    return readline.question("Type a Wikipedia search term:");
-  }
 
-  function askAndReturnPrefix()
-  {
-      const prefixes = ['Who is', 'What is','The History of']
-      const selectedPrefixIndex = readline.keyInSelect(prefixes,'Choose one option:')
-      const selectedPrefix = prefixes[selectedPrefixIndex];
-      return selectedPrefix;
-  }
-
-  console.log(content);
 }
 start();
