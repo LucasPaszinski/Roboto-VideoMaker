@@ -1,7 +1,7 @@
 
 const robots = {
-  userInput:require('./robots/userInput.js'),
-  text : require('./robots/text.js'),
+  userInput:require('./robots/userInput'),
+  text : require('./robots/text'),
 }
 
 function start() {
@@ -15,8 +15,10 @@ function start() {
   //     images: [""]
   //   }
   // ];
+  //Robots Initialization
   robots.userInput(content);
-  console.log(content);
   robots.text(content);
+
+
 }
 start();

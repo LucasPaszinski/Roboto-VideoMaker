@@ -1,15 +1,13 @@
 const Algorithmia = require("algorithmia");
 const { algorithmiaPassword } = require('../password.json');
-const sentenceBoundaryDetection = require("sbd");
 
 function robot(content) {
-  content.sourceContentOriginal = await fetchContentFromWikipedia(content);
-  content.cleanSourceContent = cleanContentReceived(
-    content.sourceContentOriginal
-  );
-  content.sentences = breakContentIntoSentences(content.cleanSourceContent);
+  console.log(`Received the content with sucess: ${content.searchTerm}`);
 
-  console.log(content.sentences);
+  fetchContentFromWikipedia(content);
+  cleanContentReceived(content);
+  breakContentIntoSentences(content);
+
   async function fetchContentFromWikipedia(content) {
     const algoritimiaClientAuthentication = Algorithmia.client(algorithmiaPassword);
     const algorithmiaWikipediaParserAPI = algoritimiaClientAuthentication.algo(
@@ -24,34 +22,13 @@ function robot(content) {
     )
 
     const wikipediaContentOriginal = WikipediaSearchResult.get();
-    return wikipediaContentOriginal.content;
+    content.sourceContentOriginal = wikipediaContentOriginal;
+    console.log(content.sourceContentOriginal);
   }
 
   function cleanContentReceived(content) {}
-    const contentWithoutBlankLinesAndMarkDowns = removeBlankLinesAndMarkDowns(
-      content
-    );
-    const cleanContent = removeDateInsideParantesis(
-      contentWithoutBlankLinesAndMarkDowns
-    return cleanContent;
 
-    function removeBlankLinesAndMarkDowns(text) {
-        if (line.trim().lenght === 0 || line.trim().startsWith("=")) {
-      return textWithoutBlankLines.join(" ");
-    function removeDateInsideParantesis(text) {
-      return text
-        .replace(/\((?:\([^()]*\)|[^()])*\)/gm, "")
-        .replace(/  /g, " ");
-
-  function breakContentIntoSentences(content) {
-    content.sentences = [];
-    const sentences = sentenceBoundaryDetection.sentences(content);
-    return sentences.map(sentence => ({
-      text: sentence,
-      images: [],
-      keyword: []
-    }));
-  }
+  function breakContentIntoSentences(content) {}
 }
 
 module.exports = robot;

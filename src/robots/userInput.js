@@ -1,9 +1,6 @@
 const readline = require("readline-sync");
 
 function userInput(content) {
-  content.searchTerm = askAndReturnSearch();
-  content.searchPrefix = askAndReturnPrefix();
-
   function askAndReturnSearch() {
     return readline.question("Type a Wikipedia search term:");
   }
@@ -17,6 +14,10 @@ function userInput(content) {
     const selectedPrefix = prefixes[selectedPrefixIndex];
     return selectedPrefix;
   }
+
+  content.searchTerm = askAndReturnSearch();
+  content.searchPrefix = askAndReturnPrefix();
+  console.log(content);
 }
 
-module.exports = userInput;
+module.exports = userInput
