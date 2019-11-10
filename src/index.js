@@ -6,15 +6,6 @@ const robots = {
 
 function start() {
   const content = {};
-  // content.sourceContentOriginal = "";
-  // content.sourceContentClean = "";
-  // content.sentences = [
-  //   {
-  //     text: "",
-  //     keywords: [""],
-  //     images: [""]
-  //   }
-  // ];
   //Robots Initialization
   robots.userInput(content);
   robots.text(content);
