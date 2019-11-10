@@ -1,13 +1,15 @@
 const Algorithmia = require("algorithmia");
 const { algorithmiaPassword } = require("../password.json");
+const sentenceBoundaryDetection = require("sbd");
 
 async function robot(content) {
-  console.log(`Received the content with sucess: ${content.searchTerm}`);
+  content.sourceContentOriginal = await fetchContentFromWikipedia(content);
+  content.cleanSourceContent = cleanContentReceived(
+    content.sourceContentOriginal
+  );
+  content.sentences = breakContentIntoSentences(content.cleanSourceContent);
 
-  await fetchContentFromWikipedia(content);
-  cleanContentReceived(content);
-  breakContentIntoSentences(content);
-
+  console.log(content.sentences);
   async function fetchContentFromWikipedia(content) {
     const algoritimiaClientAuthentication = Algorithmia.client(
       algorithmiaPassword
@@ -24,43 +26,47 @@ async function robot(content) {
     );
 
     const wikipediaContentOriginal = WikipediaSearchResult.get();
-    content.sourceContentOriginal = wikipediaContentOriginal.content;
-    console.log(content.sourceContentOriginal);
+    return wikipediaContentOriginal.content;
   }
 
   function cleanContentReceived(content) {
-    const contentWithoutBlankLines = removeBlankLines(
-      content.sourceContentOriginal
+    const contentWithoutBlankLinesAndMarkDowns = removeBlankLinesAndMarkDowns(
+      content
     );
-    const contentWithoutMarkDown = removeMarkDowns(contentWithoutBlankLines);
+    const cleanContent = removeDateInsideParantesis(
+      contentWithoutBlankLinesAndMarkDowns
+    );
 
-    function removeBlankLines(text) {
+    return cleanContent;
+
+    function removeBlankLinesAndMarkDowns(text) {
       const allLines = text.split("\n");
       const textWithoutBlankLines = allLines.filter(line => {
-        if (line.trim().lenght === 0) {
+        if (line.trim().lenght === 0 || line.trim().startsWith("=")) {
           return false;
         } else {
           return true;
         }
       });
-      return textWithoutBlankLines;
+      return textWithoutBlankLines.join(" ");
     }
 
-    function removeMarkDowns(text) {
-      const textWithoutMarkDown = text.filter((line) => {
-        if (line.trim().startsWith("=")) {
-          return false;
-        } else {
-          return true;
-        }
-      });
-      return textWithoutMarkDown;
+    function removeDateInsideParantesis(text) {
+      return text
+        .replace(/\((?:\([^()]*\)|[^()])*\)/gm, "")
+        .replace(/  /g, " ");
     }
-    console.log("\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n");
-    console.log(contentWithoutMarkDown);
   }
 
-  function breakContentIntoSentences(content) {}
+  function breakContentIntoSentences(content) {
+    content.sentences = [];
+    const sentences = sentenceBoundaryDetection.sentences(content);
+    return sentences.map(sentence => ({
+      text: sentence,
+      images: [],
+      keyword: []
+    }));
+  }
 }
 
 module.exports = robot;
