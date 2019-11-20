@@ -1,15 +1,61 @@
 const Algorithmia = require("algorithmia");
 const { algorithmiaPassword } = require("../password.json");
+const { apikey, url } = require("../watson_credentials.json");
+
 const sentenceBoundaryDetection = require("sbd");
+const NaturalLanguageUnderstandingV1 = require('ibm-watson/natural-language-understanding/v1');
+const { IamAuthenticator } = require('ibm-watson/auth');
+
+const naturalLanguageUnderstanding = new NaturalLanguageUnderstandingV1({
+  version: '2019-07-12',
+  authenticator: new IamAuthenticator({
+    apikey: apikey,
+  }),
+  url: url,
+});
 
 async function robot(content) {
   content.sourceContentOriginal = await fetchContentFromWikipedia(content);
   content.cleanSourceContent = cleanContentReceived(
     content.sourceContentOriginal
   );
-  content.sentences = breakContentIntoSentences(content.cleanSourceContent);
+  content.sentences =  breakContentIntoSentences(content.cleanSourceContent);
+  AddKeywordsToContent(content);
 
-  console.log(content.sentences);
+/////
+
+function SingleWatsonRequest(sentence)
+{
+  const analyzeParams = {
+    'text': sentence.text,
+    'features': {
+      'keywords': {
+        'limit': 3
+      }
+    }
+  };
+
+  naturalLanguageUnderstanding.analyze(analyzeParams)
+    .then(analysisResults => {
+      const keytext = analysisResults.result.keywords.map(keyword=>{return keyword.text});    
+      sentence.keywords = keytext;
+      console.log(sentence)
+    })
+    .catch(err => {
+      console.log('error:', err);
+    });
+}
+
+
+/////
+
+
+  function AddKeywordsToContent(content) {
+    content.sentences.forEach(element => {
+      SingleWatsonRequest(element);
+    });
+  }
+
   async function fetchContentFromWikipedia(content) {
     const algoritimiaClientAuthentication = Algorithmia.client(
       algorithmiaPassword
@@ -61,10 +107,11 @@ async function robot(content) {
   function breakContentIntoSentences(content) {
     content.sentences = [];
     const sentences = sentenceBoundaryDetection.sentences(content);
-    return sentences.map(sentence => ({
+    return sentences.slice(0,7).map(sentence => (
+      {
       text: sentence,
       images: [],
-      keyword: []
+      keywords: []
     }));
   }
 }

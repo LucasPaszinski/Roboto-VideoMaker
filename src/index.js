@@ -7,7 +7,7 @@ const robots = {
 function start() {
   const content = {};
   robots.userInput(content);
-  console.log(content);
   robots.text(content);
+  console.log(content.sentences)
 }
 start();
