@@ -8,6 +8,5 @@ function start() {
   const content = {};
   robots.userInput(content);
   robots.text(content);
-  console.log(content.sentences)
 }
 start();

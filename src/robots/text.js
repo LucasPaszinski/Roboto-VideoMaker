@@ -3,15 +3,15 @@ const { algorithmiaPassword } = require("../password.json");
 const { apikey, url } = require("../watson_credentials.json");
 
 const sentenceBoundaryDetection = require("sbd");
-const NaturalLanguageUnderstandingV1 = require('ibm-watson/natural-language-understanding/v1');
-const { IamAuthenticator } = require('ibm-watson/auth');
+const NaturalLanguageUnderstandingV1 = require("ibm-watson/natural-language-understanding/v1");
+const { IamAuthenticator } = require("ibm-watson/auth");
 
 const naturalLanguageUnderstanding = new NaturalLanguageUnderstandingV1({
-  version: '2019-07-12',
+  version: "2019-07-12",
   authenticator: new IamAuthenticator({
-    apikey: apikey,
+    apikey: apikey
   }),
-  url: url,
+  url: url
 });
 
 async function robot(content) {
@@ -19,42 +19,57 @@ async function robot(content) {
   content.cleanSourceContent = cleanContentReceived(
     content.sourceContentOriginal
   );
-  content.sentences =  breakContentIntoSentences(content.cleanSourceContent);
-  AddKeywordsToContent(content);
+  content.sentences = breakContentIntoSentences(content.cleanSourceContent);
+  console.log(content.sentences);
+  await fetchKeywordsOfAllSentences(content)
 
-/////
+  console.log(content.sentences);
 
-function SingleWatsonRequest(sentence)
-{
-  const analyzeParams = {
-    'text': sentence.text,
-    'features': {
-      'keywords': {
-        'limit': 3
-      }
+  
+  /////
+  async function fetchKeywordsOfAllSentences(content) {
+    console.log('> [text-robot] Starting to fetch keywords from Watson')
+    
+    for (const sentence of content.sentences) {
+      console.log(`> [text-robot] Sentence: "${sentence.text}"`)
+
+      sentence.keywords = await fetchWatsonAndReturnKeywords(sentence.text)
+
+      console.log(`> [text-robot] Keywords: ${sentence.keywords.join(', ')}\n`)
     }
-  };
+  }
 
-  naturalLanguageUnderstanding.analyze(analyzeParams)
-    .then(analysisResults => {
-      const keytext = analysisResults.result.keywords.map(keyword=>{return keyword.text});    
-      sentence.keywords = keytext;
-      console.log(sentence)
-    })
-    .catch(err => {
-      console.log('error:', err);
-    });
+
+  async function fetchWatsonAndReturnKeywords(sentence) {
+    return new Promise((resolve, reject)=>{
+
+      const analyzeParams = {
+        'text': sentence,
+        'features': {
+          'keywords': {
+            'limit':4
+          }
+        }
+      };
+
+      
+      naturalLanguageUnderstanding.analyze(analyzeParams,(error,response)=> {
+        if(error){
+          reject(error)
+          return
+        }else{
+          const keywords = response.result.keywords.map((keyword)=>
+          {
+            return keyword.text
+          }
+          )
+          resolve(keywords)
+        }
+      })
+        
+  } )
 }
 
-
-/////
-
-
-  function AddKeywordsToContent(content) {
-    content.sentences.forEach(element => {
-      SingleWatsonRequest(element);
-    });
-  }
 
   async function fetchContentFromWikipedia(content) {
     const algoritimiaClientAuthentication = Algorithmia.client(
@@ -107,8 +122,7 @@ function SingleWatsonRequest(sentence)
   function breakContentIntoSentences(content) {
     content.sentences = [];
     const sentences = sentenceBoundaryDetection.sentences(content);
-    return sentences.slice(0,7).map(sentence => (
-      {
+    return sentences.slice(0, 7).map(sentence => ({
       text: sentence,
       images: [],
       keywords: []
